@@ -18,6 +18,7 @@ with builtins;
   zstd ? pkgs.pkgsStatic.zstd,
   # path whose `bin/` directory will be used for `nix-portable` invocations
   binRoot ? nix,
+  extraNixConf ? "",
 
   buildSystem ? builtins.currentSystem,
   ...
@@ -144,8 +145,8 @@ let
       echo "ignored-acls = security.selinux system.nfs4_acl" >> \$dir/conf/nix.conf
       echo "use-sqlite-wal = false" >> \$dir/conf/nix.conf
       echo "sandbox-paths = /bin/sh=\$dir/busybox/bin/busybox" >> \$dir/conf/nix.conf
-
       echo "sandbox = \$sandbox" >> \$dir/conf/nix.conf
+      echo '${extraNixConf}' >> \$dir/conf/nix.conf
     }
 
 
