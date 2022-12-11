@@ -384,6 +384,9 @@ let
       rm -rf \$dir/tmp
     fi
 
+    # without this directory, Nix will try to set up its own chroot store
+    mkdir -p \$dir/var/nix/
+
     if [ -n "\$missing" ]; then
       debug "registering new store paths to DB"
       reg="$(cat ${storeTar}/closureInfo/registration)"
@@ -391,8 +394,6 @@ let
       debug "running command: \$cmd"
       echo "\$reg" | \$cmd
     fi
-
-
 
     ### select executable
     # the executable can either be selected by executing './nix-portable BIN_NAME',
