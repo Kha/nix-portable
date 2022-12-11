@@ -16,6 +16,8 @@ with builtins;
   pkgs ? import <nixpkgs> {},
   xz ? pkgs.pkgsStatic.xz,
   zstd ? pkgs.pkgsStatic.zstd,
+  # path whose `bin/` directory will be used for `nix-portable` invocations
+  binRoot ? nix,
 
   buildSystem ? builtins.currentSystem,
   ...
@@ -72,7 +74,7 @@ let
   zstd = packStaticBin "${inp.zstd}/bin/zstd";
 
   # the default nix store contents to extract when first used
-  storeTar = maketar ([ cacert nix nixpkgsSrc ]);
+  storeTar = maketar ([ cacert nix nixpkgsSrc binRoot ]);
 
 
   # The runtime script which unpacks the necessary files to $HOME/.nix-portable
@@ -393,7 +395,7 @@ let
 
     ### select executable
     # the executable can either be selected by executing './nix-portable BIN_NAME',
-    # or by symlinking to nix-portable, in which case the name of the symlink selectes the binary
+    # or by symlinking to nix-portable, in which case the name of the symlink selects the binary
     if [[ "\$(basename \$0)" == nix-portable* ]]; then
       if [ -z "\$1" ]; then
         echo "Error: please specify the nix binary to execute"
@@ -403,11 +405,11 @@ let
         bin="\$(which \$2)"
         shift; shift
       else
-        bin="\$dir/store${lib.removePrefix "/nix/store" nix}/bin/\$1"
+        bin="\$dir/store${lib.removePrefix "/nix/store" binRoot}/bin/\$1"
         shift
       fi
     else
-      bin="\$dir/store${lib.removePrefix "/nix/store" nix}/bin/\$(basename \$0)"
+      bin="\$dir/store${lib.removePrefix "/nix/store" binRoot}/bin/\$(basename \$0)"
     fi
 
 
