@@ -218,7 +218,9 @@ let
       sslBind="/etc/ssl /etc/ssl"
     fi
 
-
+    if [ -z "\$NP_GIT" ]; then
+      NP_GIT="\$(PATH="\$PATH_OLD" command -v git || true)"
+    fi
 
     ### detecting existing git installation
     # we need to install git inside the wrapped environment
