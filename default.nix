@@ -132,6 +132,8 @@ let
 
     # Nix portable ships its own nix.conf
     export NIX_CONF_DIR=\$dir/conf/
+    # use separate cache directory
+    export XDG_CACHE_HOME=\$dir/cache
 
 
     create_nix_conf(){
