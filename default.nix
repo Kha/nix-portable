@@ -460,8 +460,8 @@ let
     ### set PATH
     # restore original PATH and append busybox
     export PATH="\$PATH_OLD:\$dir/busybox/bin"
-    # apply overriding executable paths in \$dir/tmpbin/
-    export PATH="\$dir/tmpbin:\$PATH"
+    # apply overriding executable paths from binRoot and in \$dir/tmpbin/
+    export PATH="\$dir/store${lib.removePrefix "/nix/store" binRoot}/bin:\$dir/tmpbin:\$PATH"
 
 
 
