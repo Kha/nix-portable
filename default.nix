@@ -221,7 +221,9 @@ let
     fi
 
     if [ -z "\$NP_GIT" ]; then
-      NP_GIT="\$(PATH="\$PATH_OLD" command -v git || true)"
+      NP_GIT="\$(realpath "\$(PATH="\$PATH_OLD" command -v git || true)")"
+      # /nix/ is not overlaid currently
+      if [[ "\$NP_GIT" = /nix/* ]]; then NP_GIT=""; fi
     fi
 
     ### detecting existing git installation
