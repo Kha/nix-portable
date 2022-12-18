@@ -214,8 +214,10 @@ let
       fi
     fi
     if [ -n "\$SSL_CERT_FILE" ]; then
-      sslBind="\$(realpath \$SSL_CERT_FILE) \$dir/ca-bundle.crt"
-      export SSL_CERT_FILE="\$dir/ca-bundle.crt"
+      mkdir -p "\$dir/ssl/certs"
+      cp "\$(realpath \$SSL_CERT_FILE)" "\$dir/ssl/certs"
+      sslBind="\$dir/ssl /etc/ssl"
+      export SSL_CERT_FILE="\$dir/ssl/certs/ca-bundle.crt"
     else
       sslBind="/etc/ssl /etc/ssl"
     fi
