@@ -19,6 +19,7 @@ with builtins;
   # path whose `bin/` directory will be used for `nix-portable` invocations
   binRoot ? nix,
   extraNixConf ? "",
+  tryUseSandbox ? true,
 
   buildSystem ? builtins.currentSystem,
   ...
@@ -286,6 +287,9 @@ let
         fi
       done
 
+      # make sure to hide any outer Nix config
+      toBind="\$toBind \$dir/emptyroot \''${XDG_CONFIG_HOME:-\$HOME}/.config/nix"
+
       # if we're on a nixos, the /bin/sh symlink will point
       # to a /nix/store path which doesn't exit inside the wrapped env
       # we fix this by binding busybox/bin to /bin
@@ -430,22 +434,25 @@ let
     ### check if nix is funtional with or without sandbox
     # sandbox-fallback is not reliable: https://github.com/NixOS/nix/issues/4719
     if [ "\$newNPVersion" == "true" ] || [ "\$lastRuntime" != "\$NP_RUNTIME" ]; then
-      nixBin="\$dir/store${lib.removePrefix "/nix/store" nix}/bin/nix-build"
-      debug "Testing if nix can build stuff without sandbox"
-      if ! \$run "\$nixBin" -E "(import <nixpkgs> {}).runCommand \\"test\\" {} \\"echo \$(date) > \\\$out\\"" --option sandbox false >&3 2>&3; then
-        echo "Fatal error: nix is unable to build packages"
-        exit 1
-      fi
-
-      debug "Testing if nix sandox is functional"
-      if ! \$run "\$nixBin" -E "(import <nixpkgs> {}).runCommand \\"test\\" {} \\"echo \$(date) > \\\$out\\"" --option sandbox true >&3 2>&3; then
-        debug "Sandbox doesn't work -> disabling sandbox"
+      if [ "${toString tryUseSandbox}" == "" ]; then
+        debug "'tryUseSandbox' set to false -> disabling sandbox"
         create_nix_conf false
       else
-        debug "Sandboxed builds work -> enabling sandbox"
-        create_nix_conf true
-      fi
+        nixBin="\$dir/store${lib.removePrefix "/nix/store" nix}/bin/nix-build"
+        create_nix_conf false
+        if ! \$run "\$nixBin" -E "(import <nixpkgs> {}).runCommand \\"test\\" {} \\"echo \$(date) > \\\$out\\"" >&3 2>&3; then
+          echo "Fatal error: nix is unable to build packages"
+          exit 1
+        fi
 
+        debug "Testing if nix sandox is functional"
+        if ! \$run "\$nixBin" -E "(import <nixpkgs> {}).runCommand \\"test\\" {} \\"echo \$(date) > \\\$out\\"" --option sandbox true >&3 2>&3; then
+          debug "Sandbox doesn't work -> disabling sandbox"
+        else
+          debug "Sandboxed builds work -> enabling sandbox"
+          create_nix_conf true
+        fi
+      fi
     fi
 
 
